@@ -45,8 +45,10 @@ async def create(request: Request, background_tasks: BackgroundTasks):  # id, qu
     )
     order.save()
 
-    background_tasks.add_task(order_completed, order)
+    # background_tasks.add_task(order_completed, order)
+    background_tasks.add_task(order_completed_2, body['id'], product['quantity'] - body['quantity'])
 
+    # order_completed_2(body['id'], product['quantity'] - body['quantity'])
     return order
 
 
@@ -57,6 +59,18 @@ def order_completed(order: Order):
     redis.xadd('order_completed', order.dict(), '*')
 
 
+def order_completed_2(id: str, q: int):
+    url = 'http://localhost:8000/products/' + id + '/' + str(q)
+
+    req = requests.put(url)
+    print(req.json())
+
+
 @app.get('/orders/{pk}')
 def get(pk: str):
     return Order.get(pk)
+
+
+@app.delete('/orders/{pk}')
+def delete(pk: str):
+    return Order.delete(pk)
